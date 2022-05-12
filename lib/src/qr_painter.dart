@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:qr/qr.dart';
@@ -38,11 +39,11 @@ class QrPainter extends CustomPainter {
     this.embeddedImage,
     this.embeddedImageStyle,
     this.eyeStyle = const QrEyeStyle(
-      eyeShape: QrEyeShape.square,
+      eyeShape: QrEyeShape.circle,
       color: Color(0xFF000000),
     ),
     this.dataModuleStyle = const QrDataModuleStyle(
-      dataModuleShape: QrDataModuleShape.square,
+      dataModuleShape: QrDataModuleShape.circle,
       color: Color(0xFF000000),
     ),
   }) : assert(QrVersions.isSupportedVersion(version)) {
@@ -342,15 +343,15 @@ class QrPainter extends CustomPainter {
       canvas.drawRect(dotRect, dotPaint);
     } else {
       final roundedOuterStrokeRect =
-          RRect.fromRectAndRadius(outerRect, Radius.circular(radius));
+          RRect.fromRectAndRadius(outerRect, Radius.circular(6));
       canvas.drawRRect(roundedOuterStrokeRect, outerPaint);
 
       final roundedInnerStrokeRect =
-          RRect.fromRectAndRadius(outerRect, Radius.circular(innerRadius));
+          RRect.fromRectAndRadius(outerRect, Radius.circular(6));
       canvas.drawRRect(roundedInnerStrokeRect, innerPaint);
 
       final roundedDotStrokeRect =
-          RRect.fromRectAndRadius(dotRect, Radius.circular(dotSize));
+          RRect.fromRectAndRadius(dotRect, Radius.circular(2));
       canvas.drawRRect(roundedDotStrokeRect, dotPaint);
     }
   }
@@ -376,16 +377,20 @@ class QrPainter extends CustomPainter {
       Canvas canvas, Offset position, Size size, QrEmbeddedImageStyle? style) {
     final paint = Paint()
       ..isAntiAlias = true
-      ..filterQuality = FilterQuality.high;
+      ..filterQuality = FilterQuality.high
+      ..color = Colors.white;
     if (style != null) {
       if (style.color != null) {
-        paint.colorFilter = ColorFilter.mode(style.color!, BlendMode.srcATop);
+        paint.colorFilter = ColorFilter.mode(style.color!, BlendMode.dstATop);
       }
     }
     final srcSize =
         Size(embeddedImage!.width.toDouble(), embeddedImage!.height.toDouble());
     final src = Alignment.center.inscribe(srcSize, Offset.zero & srcSize);
     final dst = Alignment.center.inscribe(size, position & size);
+    final a = Alignment.center.inscribe(ui.Size(50, 50), position & size);
+    final b = ui.RRect.fromRectAndRadius(a, Radius.circular(8));
+    canvas.drawRRect(b, paint);
     canvas.drawImageRect(embeddedImage!, src, dst, paint);
   }
 
